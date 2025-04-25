@@ -1,1 +1,1 @@
-export type PropertyStatus = "for-sale" | "draft" | "withdrawn" | "sold"
+export type PropertyStatus = 'for-sale' | 'draft' | 'withdrawn' | 'sold';
