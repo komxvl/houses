@@ -22,8 +22,6 @@ export const setToken = async ({
       return;
     }
 
-    console.log(verifiedToken);
-
     const userRecord = await auth.getUser(verifiedToken.uid);
     if (process.env.ADMIN_EMAIL === userRecord.email && !userRecord.customClaims?.admin) {
       auth.setCustomUserClaims(verifiedToken.uid, {
@@ -41,6 +39,6 @@ export const setToken = async ({
       secure: process.env.NODE_ENV === 'production',
     });
   } catch (e) {
-    console.log(e);
+    console.warn(e);
   }
 };

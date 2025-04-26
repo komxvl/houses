@@ -15,12 +15,11 @@ export const createProperty = async (
     bedrooms: number;
     bathrooms: number;
     status: 'for-sale' | 'draft' | 'withdrawn' | 'sold';
-    token: string;
   },
   authToken: string
 ) => {
-  const { token, ...propertyData } = data;
-  const verifiedToken = await auth.verifyIdToken(data.token);
+  const { ...propertyData } = data;
+  const verifiedToken = await auth.verifyIdToken(authToken);
 
   if (!verifiedToken.admin) {
     return {
@@ -29,7 +28,7 @@ export const createProperty = async (
     };
   }
 
-  const validation = propertySchema.safeParse(propertyData);
+  const validation = propertySchema.safeParse(data);
   if (!validation.success) {
     return {
       error: true,

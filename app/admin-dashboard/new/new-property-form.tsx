@@ -12,13 +12,13 @@ import { useRouter } from 'next/navigation';
 export default function NewPropertyForm() {
   const auth = useAuth();
   const router = useRouter();
-  const handleSubmit = async (data) => {
+  const handleSubmit = async (data: z.infer<typeof propertySchema>) => {
     const token = await auth?.currentUser?.getIdToken();
-    console.log(token);
+
     if (!token) {
       return;
     }
-    const responese = await createProperty({ ...data, token });
+    const responese = await createProperty(data, token);
     if (!!responese.error) {
       toast.error('Error', {
         description: responese.error,

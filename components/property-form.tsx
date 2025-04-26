@@ -6,27 +6,21 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import { Button } from './ui/button';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@radix-ui/react-select';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { log } from 'console';
 import React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 type Props = {
   handleSubmit: (data: z.infer<typeof propertySchema>) => void;
   submitButtonLabel: React.ReactNode;
+  defaultValues?: z.infer<typeof propertySchema>;
 };
 
-export default function PropertyForm({ handleSubmit, submitButtonLabel }: Props) {
-  const form = useForm<z.infer<typeof propertySchema>>({
-    resolver: zodResolver(propertySchema),
-    defaultValues: {
+export default function PropertyForm({ handleSubmit, submitButtonLabel, defaultValues }: Props) {
+  const combineDefaultValues = {
+    ...{
       address1: '',
       address2: '',
       city: '',
@@ -44,6 +38,12 @@ export default function PropertyForm({ handleSubmit, submitButtonLabel }: Props)
         },
       ],
     },
+    ...defaultValues,
+  };
+
+  const form = useForm<z.infer<typeof propertySchema>>({
+    resolver: zodResolver(propertySchema),
+    defaultValues: combineDefaultValues,
   });
 
   return (

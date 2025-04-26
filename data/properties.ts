@@ -46,8 +46,6 @@ export const getProperties = async (options?: GetPropertiesOptions) => {
     .offset((page - 1) * pageSize)
     .get();
 
-  console.log({ propertiesSnapshot });
-
   const properties = propertiesSnapshot.docs.map(
     (doc) =>
       ({
@@ -56,7 +54,11 @@ export const getProperties = async (options?: GetPropertiesOptions) => {
       }) as Property
   );
 
-  console.log({ properties });
-
   return { data: properties, totalPages };
+};
+
+export const getPropertyById = async (propertyId: string) => {
+  const propertySnapshot = await firestore.collection('properties').doc(propertyId).get();
+  const propertyData = { id: propertySnapshot.id, ...propertySnapshot.data() } as Property;
+  return propertyData;
 };
