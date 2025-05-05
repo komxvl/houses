@@ -4,10 +4,12 @@ import PropertyForm from '@/components/property-form';
 import { useAuth } from '@/context/auth';
 import { formSchema, propertySchema } from '@/validation/propertySchema';
 import { PlusCircleIcon } from 'lucide-react';
-import { z } from 'zod';
-import { createProperty } from './actions';
+import { string, z } from 'zod';
+import { createProperty, savePropertyImages } from './actions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { ref, uploadBytesResumable, UploadTask } from 'firebase/storage';
+import { storage } from '@/firebase/client';
 
 export default function NewPropertyForm() {
   const auth = useAuth();
@@ -18,13 +20,30 @@ export default function NewPropertyForm() {
     if (!token) {
       return;
     }
-    const responese = await createProperty(data, token);
+
+    const { images, ...rest } = data;
+    console.log(rest);
+    const responese = await createProperty({ ...rest, images: [] }, token);
     if (!!responese.error) {
       toast.error('Error', {
         description: responese.error,
       });
       return;
     }
+
+    const uploadTasks: UploadTask[] = [];
+    const paths: string[] = [];
+    images.forEach((image, index) => {
+      if (image.file) {
+        const path = `properties/${responese.propertyId}/${Date.now()}-${index}-${image.id}`;
+        paths.push(path);
+        const storageRef = ref(storage, path);
+        uploadTasks.push(uploadBytesResumable(storageRef, image.file));
+      }
+    });
+
+    await Promise.all(uploadTasks);
+    await savePropertyImages({ propertyId: responese.propertyId, images: paths }, token);
 
     toast.success('Success', {
       description: 'Property created!',
