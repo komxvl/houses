@@ -1,13 +1,16 @@
 'use client';
 
 import PropertyForm from '@/components/property-form';
-import { auth } from '@/firebase/client';
+import { auth, storage } from '@/firebase/client';
 import { Property } from '@/types/property';
 import { propertySchema } from '@/validation/propertySchema';
 import { z } from 'zod';
 import { updateProperty } from './actions';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { deleteObject, ref, uploadBytesResumable, UploadTask } from 'firebase/storage';
+import path from 'path';
+import { savePropertyImages } from '../../new/actions';
 
 type Props = Property;
 
@@ -22,6 +25,7 @@ export default function EditPropertyForm({
   status,
   bathrooms,
   bedrooms,
+  images = [],
 }: Props) {
   const router = useRouter();
   const handleSubmit = async (data: z.infer<typeof propertySchema>) => {
@@ -30,7 +34,43 @@ export default function EditPropertyForm({
     if (!token) {
       return;
     }
-    await updateProperty({ ...data, id }, token);
+
+    const { images: newImages, ...rest } = data;
+
+    const response = await updateProperty({ ...rest, id }, token);
+
+    if (!!response?.error) {
+      toast.success('Error', {
+        description: 'Error',
+      });
+    }
+
+    const storageTasks: (UploadTask | Promise<void>)[] = [];
+    const imageToDelete = images.filter(
+      (image) => !newImages.find((newImage) => image === newImage.url)
+    );
+
+    imageToDelete.forEach((image) => {
+      storageTasks.push(deleteObject(ref(storage, image)));
+    });
+
+    const paths: string[] = [];
+    newImages.forEach((image, index) => {
+      if (image.file) {
+        const path = `properties/${id}/${Date.now()}-${index}-${image.id}`;
+        paths.push(path);
+        const storageRef = ref(storage, path);
+        storageTasks.push(uploadBytesResumable(storageRef, image.file));
+      } else {
+        paths.push(image.url);
+      }
+    });
+
+    console.log(paths);
+
+    await Promise.all(storageTasks);
+    await savePropertyImages({ propertyId: id, images: paths }, token);
+
     toast.success('Succes', {
       description: 'Propert updated',
     });
@@ -51,13 +91,10 @@ export default function EditPropertyForm({
         status,
         bathrooms,
         bedrooms,
-        images: [
-          {
-            id: '',
-            url: '',
-            file: '',
-          },
-        ],
+        images: images.map((image) => ({
+          id: image,
+          url: image,
+        })),
       }}
     />
   );

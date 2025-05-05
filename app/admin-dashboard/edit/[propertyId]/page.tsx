@@ -36,6 +36,7 @@ export default async function EditProperty({ params }: { params: Promise<any> })
             bedrooms={property.bedrooms}
             price={property.price}
             status={property.status}
+            images={property.images || []}
           />
         </CardContent>
       </Card>

@@ -8,9 +8,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
-import { log } from 'console';
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import MultiImageUploader, { ImageUpload } from './multi-image-uploader';
 
 type Props = {
   handleSubmit: (data: z.infer<typeof propertySchema>) => void;
@@ -30,13 +30,7 @@ export default function PropertyForm({ handleSubmit, submitButtonLabel, defaultV
       bathrooms: 0,
       status: 'draft',
       description: '',
-      images: [
-        {
-          id: '',
-          url: '',
-          file: '',
-        },
-      ],
+      images: [],
     },
     ...defaultValues,
   };
@@ -188,20 +182,18 @@ export default function PropertyForm({ handleSubmit, submitButtonLabel, defaultV
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                {/* <MultiImageUploader
-                    onImagesChange={(images: ImageUpload[]) => {
-                      form.setValue("images", images);
-                    }}
-                    images={field.value}
-                    urlFormatter={(image) => {
-                      if (!image.file) {
-                        return `https://firebasestorage.googleapis.com/v0/b/fire-homes-course.appspot.com/o/${encodeURIComponent(
-                          image.url
-                        )}?alt=media`;
-                      }
-                      return image.url;
-                    }}
-                  /> */}
+                <MultiImageUploader
+                  onImagesChange={(images: ImageUpload[]) => {
+                    form.setValue('images', images);
+                  }}
+                  images={field.value}
+                  urlFormatter={(image) => {
+                    if (!image.file) {
+                      return `https://firebasestorage.googleapis.com/v0/b/react.appspot.com/o/${encodeURIComponent(image.url)}?alt=media`;
+                    }
+                    return image.url;
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

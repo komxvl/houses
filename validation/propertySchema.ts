@@ -20,7 +20,7 @@ export const propertyImagesSchema = z.object({
     z.object({
       id: z.string(),
       url: z.string(),
-      file: z.string(), // z.instanceof(File).optional(),
+      file: z.instanceof(File).optional(),
     })
   ),
 });
